@@ -213,7 +213,7 @@ export async function getRandomPrompt(): Promise<string> {
         {
           parts: [
             {
-              text: `Generate a creative photo challenge prompt for a fun photo scavenger hunt game. The prompt should be something players can find around their house, office, or nearby area. Make it interesting and specific but achievable. Examples: "Find something that is blue and soft", "Show me something smaller than your thumb", "Find something that has exactly 3 colors". Generate only one prompt, no explanation, just the prompt itself starting with action words like "Find", "Show me", or "Take a photo of". Let the prompt be simple. Not complex`
+              text: `Generate a prompt for a fun photo scavenger hunt game. The prompt should be something players can find around their house, office, or nearby area describing stuffs. Make it interesting and specific but achievable. Examples: "Find something that is blue and soft", "Show me something smaller than your thumb", "Find something that has exactly 3 colors". Generate only one prompt, no explanation, just the prompt itself starting with action words like "Find", "Show me", or "Take a photo of". Let the prompt be simple. Not complex`
             }
           ]
         }
