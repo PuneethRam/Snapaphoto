@@ -14,7 +14,8 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const result = startGame(roomId.toUpperCase(), playerId);
+    console.log('Starting game for room:', roomId);
+    const result = await startGame(roomId.toUpperCase(), playerId); // Now await!
     
     if (!result.success) {
       return NextResponse.json({

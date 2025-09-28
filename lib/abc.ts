@@ -79,7 +79,7 @@ export function createRoom(hostName: string): Room {
   return room;
 }
 
-export async function startGame(roomId: string, playerId: string): Promise<{ success: boolean; room?: Room; error?: string }> {
+export function startGame(roomId: string, playerId: string): { success: boolean; room?: Room; error?: string } {
   loadRooms();
   const room = rooms[roomId];
   
@@ -95,23 +95,13 @@ export async function startGame(roomId: string, playerId: string): Promise<{ suc
     return { success: false, error: 'Need at least 2 players to start' };
   }
 
-  console.log('Generating prompt for room:', roomId);
-  
-  // Update the room state
   room.gameState = 'playing';
-  room.prompt = await getRandomPrompt(); // Generate prompt
+  room.prompt = getRandomPrompt();
   room.submissions = [];
   room.winner = undefined;
   
-  // CRITICAL: Update the rooms object in memory
-  rooms[roomId] = room;
-  
-  // Then save to file
   saveRooms();
-  
   console.log('Game started for room:', roomId, 'Prompt:', room.prompt);
-  console.log('Room state updated to:', room.gameState);
-  
   return { success: true, room };
 }
 
@@ -199,63 +189,11 @@ export const GAME_PROMPTS = [
   "Find something with buttons",
 ];
 
-// Generate random prompt using Gemini API
-export async function getRandomPrompt(): Promise<string> {
-  if (!process.env.GEMINI_API_KEY) {
-    console.warn('No Gemini API key found, using static prompts');
-    return GAME_PROMPTS[Math.floor(Math.random() * GAME_PROMPTS.length)];
-  }
-
-  try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
-    const payload = {
-      contents: [
-        {
-          parts: [
-            {
-              text: `Generate a creative photo challenge prompt for a fun photo scavenger hunt game. The prompt should be something players can find around their house, office, or nearby area. Make it interesting and specific but achievable. Examples: "Find something that casts an interesting shadow", "Show me something smaller than your thumb", "Find something that has exactly 3 colors". Generate only one prompt, no explanation, just the prompt itself starting with action words like "Find", "Show me", or "Take a photo of".`
-            }
-          ]
-        }
-      ],
-      generationConfig: {
-        temperature: 0.8,
-        maxOutputTokens: 2000,
-        topP: 0.9
-      }
-    };
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      console.error("Gemini prompt generation failed, using fallback");
-      return GAME_PROMPTS[Math.floor(Math.random() * GAME_PROMPTS.length)];
-    }
-
-    const result = await response.json();
-    console.log(result);
-    const candidate = result.candidates?.[0];
-    const promptText = candidate?.content?.parts?.[0]?.text?.trim();
-
-    if (promptText) {
-      console.log('Generated Gemini prompt:', promptText);
-      return promptText;
-    } else {
-      console.log('Generated Gemini prompt:', promptText);
-      console.warn('Invalid prompt from Gemini, using fallback');
-      return GAME_PROMPTS[Math.floor(Math.random() * GAME_PROMPTS.length)];
-    }
-
-  } catch (error) {
-    console.error('Error generating prompt with Gemini:', error);
-    return GAME_PROMPTS[Math.floor(Math.random() * GAME_PROMPTS.length)];
-  }
+export function getRandomPrompt(): string {
+  return GAME_PROMPTS[Math.floor(Math.random() * GAME_PROMPTS.length)];
 }
 
+// Real Gemini API scorer
 // Real Gemini API scorer
 export async function scorePhoto(prompt: string, imageData: string): Promise<number> {
   if (!process.env.GEMINI_API_KEY) {
@@ -373,6 +311,9 @@ function mockScorePhoto(prompt: string, imageData: string): number {
     score += Math.random() * 1.5;
   }
   if (promptLower.includes('text')) {
+    score += Math.random() * 1.5;
+  }
+  if (promptLower.includes('snack') || promptLower.includes('food')) {
     score += Math.random() * 1.5;
   }
   
